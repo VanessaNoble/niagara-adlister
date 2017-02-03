@@ -13,14 +13,14 @@ public class DaoFactory {
         if (adsDao == null) {
             adsDao = new MySQLAdsDao(config);
         }
-        return adsDao;
+        return adsDao; //return instances to users data access object
     }
 
     public static Users getUsersDao() {
         if (usersDao == null) {
             usersDao = new MySQLUsersDao(config);
         }
-        return usersDao;
+        return usersDao;  //return instances to users data access object
     }
 }
 
