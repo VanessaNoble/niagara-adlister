@@ -29,17 +29,27 @@ public class MySQLUsersDao implements Users {
 
     @Override
     public User findByUsername(String username) {
-        String query = "SELECT * FROM users WHERE username = ? LIMIT 1";
+        String query = "SELECT * FROM users WHERE username = ?";
         try {
-            PreparedStatement stmt = connection.prepareStatement(query);
-            stmt.setString(1, username);
-            return extractUser(stmt.executeQuery());
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setString( parameterIndex: 1, username);
+
+            ResultSet resultSet = statement.executeQuery();
+            if (!resultSet.next()){
+                return null;
+            }
+            return new User(
+                    resultSet.getLong( columnLabel: "id"),
+                    resultSet.getString( columnLabel: "username"),
+                    resultSet.getString( columnLabel: "email"),
+                    resultSet.getString( columnLabel: "password"),
+            );
         } catch (SQLException e) {
             throw new RuntimeException("Error finding a user by username", e);
         }
     }
 
-    @Override
+
     public User findById(Long id) {
         String query = "SELECT * FROM users WHERE id = ? LIMIT 1";
         try {
@@ -53,16 +63,16 @@ public class MySQLUsersDao implements Users {
 
     @Override
     public Long insert(User user) {
-        String query = "INSERT INTO users(username, email, password) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO users(username, email, password) VALUES (?, ?, ?)";
         try {
-            PreparedStatement stmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            stmt.setString(1, user.getUsername());
-            stmt.setString(2, user.getEmail());
-            stmt.setString(3, user.getPassword());
+            PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            stmt.setString(parameterIndex: 1, user.getUsername());
+            stmt.setString(parameterIndex: 2, user.getEmail());
+            stmt.setString(parameterIndex: 3, user.getPassword());
             stmt.executeUpdate();
-            ResultSet rs = stmt.getGeneratedKeys();
-            rs.next();
-            return rs.getLong(1);
+            ResultSet generatedKeys = stmt.getGeneratedKeys();
+            generatedKeys.next();
+            return generatedKeys.getLong(columnIndex: 1);
         } catch (SQLException e) {
             throw new RuntimeException("Error creating new user", e);
         }
